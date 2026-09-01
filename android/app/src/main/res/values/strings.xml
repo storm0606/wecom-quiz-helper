@@ -50,6 +50,7 @@
     <string name="active_bank_all">所有题库（共 %1$d 题）</string>
     <string name="active_bank_specific">%1$s（%2$d 题）</string>
     <string name="active_bank_none">未选择题库（请到题库管理中设置）</string>
+    <string name="notify_permission_hint">⚠ 请开启通知权限使用，否则影响答题（点击此处开启）</string>
     <string name="overlay_settings_title">悬浮窗设置</string>
     <string name="overlay_feedback_label">识别到新题时的反馈</string>
     <string name="overlay_feedback_hint">切换题目时悬浮窗的提示方式（答案相同也能感知到已识别新题）</string>

@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
 
     private val requestNotificationPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { /* 拒绝也不阻塞，前台服务通知可能不显示 */ }
+    ) { refreshNotifyHint() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,6 +54,10 @@ class MainActivity : AppCompatActivity() {
         binding.btnOverlaySettings.setOnClickListener { showOverlaySettingsDialog() }
         binding.btnSettings.setOnClickListener {
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+        }
+        // 通知权限提示横幅（v2.1）：点击直接请求权限
+        binding.tvNotifyHint.setOnClickListener {
+            requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
 
         // 悬浮窗运行状态 → 按钮文字（开始/停止），实时联动
@@ -79,6 +83,18 @@ class MainActivity : AppCompatActivity() {
             if (AnswerStore.overlayRunning.value) R.string.btn_stop_quiz else R.string.btn_start_quiz
         )
         refreshActiveBank()
+        refreshNotifyHint()
+    }
+
+    /** Android 13+ 且未授予通知权限时显示提示横幅 */
+    private fun shouldShowNotifyHint(): Boolean =
+        Build.VERSION.SDK_INT >= 33 &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+
+    private fun refreshNotifyHint() {
+        binding.tvNotifyHint.visibility =
+            if (shouldShowNotifyHint()) android.view.View.VISIBLE else android.view.View.GONE
     }
 
     /** 显示当前激活题库：所有题库 / 指定题库名称（v1.3；v2.0 改 COUNT 查询避免全表加载） */

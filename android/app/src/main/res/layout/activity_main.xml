@@ -48,6 +48,18 @@
         android:textStyle="bold"
         tools:text="已激活：所有题库（共 1365 题）" />
 
+    <TextView
+        android:id="@+id/tvNotifyHint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/warning_bg"
+        android:padding="10dp"
+        android:text="@string/notify_permission_hint"
+        android:textColor="#7A4F00"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
     <Button
         android:id="@+id/btnQuiz"
         android:layout_width="match_parent"
