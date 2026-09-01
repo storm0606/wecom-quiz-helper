@@ -56,6 +56,33 @@ class AnswerRepository(private val db: AppDatabase) {
         return AnswerMatcher.match(stemText, qs)
     }
 
+    // ---------- 悬浮窗自定义设置（v1.5） ----------
+
+    /** 默认悬浮窗背景色（半透明蓝） */
+    companion object {
+        const val DEFAULT_OVERLAY_BG = "#E61A73E8"
+    }
+
+    /** 新题反馈方式：none / flash（高亮闪烁）/ color（背景色短暂变化） */
+    suspend fun overlayFeedback(): String =
+        db.appSettingsDao().get(AppSettingsKeys.OVERLAY_FEEDBACK) ?: "flash"
+
+    suspend fun setOverlayFeedback(mode: String) =
+        db.appSettingsDao().put(AppSettingsKeys.OVERLAY_FEEDBACK, mode)
+
+    /** 悬浮窗背景颜色（#AARRGGBB），解析失败回退默认 */
+    suspend fun overlayBgColor(): Int {
+        val raw = db.appSettingsDao().get(AppSettingsKeys.OVERLAY_BG_COLOR) ?: return parseColor(DEFAULT_OVERLAY_BG)
+        return parseColor(raw)
+    }
+
+    suspend fun setOverlayBgColor(colorHex: String) =
+        db.appSettingsDao().put(AppSettingsKeys.OVERLAY_BG_COLOR, colorHex)
+
+    private fun parseColor(hex: String): Int =
+        runCatching { android.graphics.Color.parseColor(hex) }
+            .getOrDefault(android.graphics.Color.parseColor(DEFAULT_OVERLAY_BG))
+
     /** 单元测试辅助：注入题目列表 */
     fun matchWith(questions: List<QuestionEntity>, stemText: String): MatchResult =
         AnswerMatcher.match(stemText, questions)

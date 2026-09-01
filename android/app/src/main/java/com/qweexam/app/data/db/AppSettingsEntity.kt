@@ -14,4 +14,6 @@ data class AppSettingsEntity(
 object AppSettingsKeys {
     const val MATCH_MODE = "match_mode"          // all / specific
     const val CURRENT_BANK_ID = "current_bank_id"
+    const val OVERLAY_FEEDBACK = "overlay_feedback"   // none / flash / color
+    const val OVERLAY_BG_COLOR = "overlay_bg_color"   // #AARRGGBB
 }
