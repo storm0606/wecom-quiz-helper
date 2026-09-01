@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">企微考试</string>
+    <string name="app_slogan">企业微信答题辅助工具</string>
+    <string name="version_format">版本：%1$s</string>
+    <string name="module_bank">题库管理</string>
+    <string name="module_quiz">开始答题</string>
+    <string name="module_settings">设置</string>
+    <string name="under_development">「%1$s」功能开发中，敬请期待</string>
+    <string name="import_pick_file">选择题库文件（.xlsx / .xls / .docx / .csv）</string>
+    <string name="import_column_hint">列映射（已自动识别，可手动调整，必须指定「题目」和「答案」列）</string>
+    <string name="import_confirm">确认导入</string>
+    <string name="import_success">导入成功：%1$d 题</string>
+    <string name="accessibility_service_name">企微考试读题服务</string>
+    <string name="accessibility_service_description">在企业微信答题时读取屏幕上的题目，匹配题库并在悬浮窗显示正确答案。仅读取企业微信答题页面内容，不做任何自动操作。</string>
+    <string name="service_status_on">无障碍读题服务：已开启</string>
+    <string name="service_status_off">无障碍读题服务：未开启（请到系统设置中开启）</string>
+    <string name="overlay_title">企微考试 · 答案</string>
+    <string name="overlay_waiting">等待题目…</string>
+    <string name="overlay_collapse">收起</string>
+    <string name="overlay_expand">展开</string>
+    <string name="overlay_channel_name">答题悬浮窗</string>
+    <string name="overlay_notification_text">悬浮窗已开启，正在监听答题</string>
+    <string name="btn_start_quiz">开始答题</string>
+    <string name="btn_stop_quiz">停止答题</string>
+    <string name="overlay_permission_hint">请先允许「显示在其他应用上层」权限，然后重新点击开始答题</string>
+    <string name="accessibility_not_enabled_hint">请先开启「企微考试读题服务」无障碍权限</string>
+    <string name="bank_import_new">导入新题库</string>
+    <string name="bank_no_banks">暂无题库，点击上方按钮导入</string>
+    <string name="bank_count">%1$d 题</string>
+    <string name="bank_rename">重命名</string>
+    <string name="bank_delete">删除</string>
+    <string name="bank_delete_confirm">确定删除题库「%1$s」？该题库下所有题目将一并删除。</string>
+    <string name="auth_title">设备验证</string>
+    <string name="auth_hint">本应用已启用 2FA 设备绑定。请在身份验证器（如 Google Authenticator）中输入当前 6 位动态验证码。</string>
+    <string name="auth_code_hint">6 位验证码</string>
+    <string name="auth_verify">验证并绑定设备</string>
+    <string name="auth_code_format_hint">请输入 6 位数字验证码</string>
+    <string name="auth_success">验证通过，设备已绑定</string>
+    <string name="auth_failed">验证码错误或已过期，请重试</string>
+    <string name="match_mode_all">匹配所有题库</string>
+    <string name="match_mode_specific">只匹配指定题库</string>
+    <string name="match_mode_hint">匹配范围：所有题库 = 合并查找（跨库同题不同答案会提示歧义）；指定题库 = 只查你选中的一套</string>
+    <string name="bank_set_current">设为当前</string>
+    <string name="bank_current_tag">当前使用</string>
+    <string name="bank_current_set">已将「%1$s」设为当前题库</string>
+    <string name="import_parse_failed">文件为空或无法解析，请确认是标准 Excel/Word/CSV 题库文件</string>
+    <string name="import_zero">解析到 0 题：请检查列映射，或该文件可能不是标准 Excel 格式（可另存为 .xlsx 后重试）</string>
+    <string name="active_bank_label">已激活：%1$s</string>
+    <string name="active_bank_all">所有题库（共 %1$d 题）</string>
+    <string name="active_bank_specific">%1$s（%2$d 题）</string>
+    <string name="active_bank_none">未选择题库（请到题库管理中设置）</string>
+</resources>

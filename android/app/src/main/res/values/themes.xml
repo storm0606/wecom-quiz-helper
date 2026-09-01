@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.QWeExam" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/qwe_primary</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">@color/qwe_accent</item>
+    </style>
+
+    <!-- 导入/题库管理页强制明亮主题（v1.1：现代化明亮 UI） -->
+    <style name="Theme.QWeExam.Light" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/qwe_primary</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">@color/qwe_accent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">#FFFFFF</item>
+    </style>
+</resources>

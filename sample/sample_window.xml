@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<!-- 模拟的企业微信答题页 uiautomator dump（仅用于原型自测，真实数据以真机抓取为准） -->
+<hierarchy rotation="0">
+  <node index="0" text="" class="android.widget.FrameLayout" resource-id="" bounds="[0,0][1080,2400]" clickable="false">
+    <node index="1" text="第10题(1.00 分)" class="android.widget.TextView" resource-id="" bounds="[60,200][1020,280]" clickable="false"/>
+    <node index="2" text="单选" class="android.widget.TextView" resource-id="" bounds="[60,290][1020,340]" clickable="false"/>
+    <node index="3" text="城市轨道交通的“运营”是指为实现安全有效运送乘客而有组织开展的活动总称,不包括以下哪项?" class="android.widget.TextView" resource-id="" bounds="[60,350][1020,520]" clickable="false"/>
+    <node index="4" text="A.房地产开发" class="android.widget.TextView" resource-id="" bounds="[60,540][1020,620]" clickable="false"/>
+    <node index="5" text="B.行车组织" class="android.widget.TextView" resource-id="" bounds="[60,630][1020,710]" clickable="false"/>
+    <node index="6" text="C.票务组织" class="android.widget.TextView" resource-id="" bounds="[60,720][1020,800]" clickable="false"/>
+    <node index="7" text="D.客运组织" class="android.widget.TextView" resource-id="" bounds="[60,810][1020,890]" clickable="false"/>
+    <node index="8" text="上一题" class="android.widget.Button" resource-id="" bounds="[60,900][300,1000]" clickable="true"/>
+    <node index="9" text="下一题" class="android.widget.Button" resource-id="" bounds="[780,900][1020,1000]" clickable="true"/>
+  </node>
+</hierarchy>

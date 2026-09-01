@@ -1,0 +1,27 @@
+# ---- 敏感文件：绝不入库 ----
+*.keystore
+docs/2FA密钥.md
+
+# ---- 真实题库数据（个人数据，不入库；如需跟踪请删除这两行） ----
+/题库1.xlsx
+/题库2.xls
+
+# ---- 构建产物与缓存 ----
+.gcache/
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+*.apk
+
+# ---- IDE / 系统 ----
+.idea/
+*.iml
+.DS_Store
+captures/
+.cxx/
+
+# ---- Python ----
+__pycache__/
+*.pyc
+.venv/
