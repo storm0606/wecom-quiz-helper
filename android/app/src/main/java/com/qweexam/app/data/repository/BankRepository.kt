@@ -18,6 +18,10 @@ class BankRepository(val db: AppDatabase) {
         onProgress: ((Int) -> Unit)? = null
     ): Pair<Long, Int> {
         val questions = BankParser.loadBank(fileName, data, mapping)
+        // 0 题直接抛错，不建空题库记录（v2.3 修复：避免残留"XX 0 题"垃圾行）
+        if (questions.isEmpty()) {
+            throw IllegalArgumentException("未解析到任何题目，请检查列映射或文件格式")
+        }
         val bankId = db.bankDao().insert(
             BankEntity(name = fileName.substringBeforeLast('.'), filePath = fileName, questionCount = questions.size)
         )

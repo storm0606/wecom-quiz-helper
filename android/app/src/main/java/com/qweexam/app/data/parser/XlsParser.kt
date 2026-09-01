@@ -337,14 +337,14 @@ object XlsParser {
             }
         }
 
-        // 转二维数组
+        // 转二维数组（v2.3：只按有数据的行紧凑构建，避免 (0..maxR) 稠密矩阵 OOM）
         val out = mutableListOf<List<List<String>>>()
         for (grid in sheets) {
             if (grid.isEmpty()) continue
-            val maxR = grid.keys.maxOf { it.first }
-            val maxC = grid.keys.maxOf { it.second }
-            val rows = (0..maxR).map { r ->
-                (0..maxC).map { c -> grid[r to c] ?: "" }
+            val rowIndices = grid.keys.map { it.first }.distinct().sorted()
+            val colMax = grid.keys.maxOf { it.second }.coerceAtMost(256)
+            val rows = rowIndices.map { r ->
+                (0..colMax).map { c -> grid[r to c] ?: "" }
             }.toMutableList()
             while (rows.isNotEmpty() && rows.last().all { it.isBlank() }) rows.removeAt(rows.size - 1)
             if (rows.isNotEmpty()) out.add(rows)
