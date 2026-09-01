@@ -42,9 +42,10 @@ class TotpUtilTest {
 
     @Test
     fun verify_rejectsBadFormat() {
-        assertFalse(TotpUtil.verify("12345"))        // 5 位
-        assertFalse(TotpUtil.verify("12a345"))       // 含字母
-        assertFalse(TotpUtil.verify(""))             // 空
+        val secret = "JBSWY3DPEHPK3PXP"
+        assertFalse(TotpUtil.verify("12345", secret))        // 5 位
+        assertFalse(TotpUtil.verify("12a345", secret))       // 含字母
+        assertFalse(TotpUtil.verify("", secret))             // 空
     }
 
     @Test

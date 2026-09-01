@@ -33,11 +33,19 @@ class AuthActivity : AppCompatActivity() {
 
         binding.btnVerify.setOnClickListener { doVerify() }
 
-        // 已绑定则直接放行
+        // 已绑定则直接放行；否则按是否已存密钥决定显示模式
         lifecycleScope.launch {
-            val bound = withContext(Dispatchers.IO) { repository.isBound(this@AuthActivity) }
+            val (bound, hasSecret) = withContext(Dispatchers.IO) {
+                repository.isBound(this@AuthActivity) to repository.hasSecret()
+            }
             if (bound) {
                 enterMain()
+            } else {
+                binding.secretLayout.visibility =
+                    if (hasSecret) android.view.View.GONE else android.view.View.VISIBLE
+                binding.tvHint.text = getString(
+                    if (hasSecret) R.string.auth_hint else R.string.auth_hint_setup
+                )
             }
         }
     }
@@ -51,6 +59,13 @@ class AuthActivity : AppCompatActivity() {
         binding.btnVerify.isEnabled = false
         lifecycleScope.launch {
             val ok = withContext(Dispatchers.IO) {
+                // 首次：先保存用户输入的密钥，再校验验证码
+                if (!repository.hasSecret()) {
+                    val secret = binding.etSecret.text.toString().trim()
+                    if (secret.isNotEmpty()) {
+                        repository.saveSecret(secret)
+                    }
+                }
                 repository.verifyAndBind(this@AuthActivity, code)
             }
             binding.btnVerify.isEnabled = true

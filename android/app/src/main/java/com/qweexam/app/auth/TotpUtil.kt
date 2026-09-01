@@ -51,8 +51,8 @@ object TotpUtil {
         return (bin % 1_000_000).toString().padStart(6, '0')
     }
 
-    /** 校验用户输入的 6 位码（含 ±windowSlack 步时间窗口） */
-    fun verify(code: String, secretBase32: String = AuthConfig.TOTP_SECRET): Boolean {
+    /** 校验用户输入的 6 位码（含 ±windowSlack 步时间窗口）；密钥必须显式传入（v1.8 不再有默认密钥） */
+    fun verify(code: String, secretBase32: String): Boolean {
         val input = code.trim()
         if (input.length != 6 || !input.all { it.isDigit() }) return false
         val now = System.currentTimeMillis()
