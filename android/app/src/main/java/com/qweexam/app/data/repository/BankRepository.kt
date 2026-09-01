@@ -27,6 +27,8 @@ class BankRepository(val db: AppDatabase) {
             db.questionDao().insertAll(chunk)
             onProgress?.invoke(chunk.size)
         }
+        // 通知匹配缓存失效（v1.7：服务运行期间导入新题库也能立即匹配到）
+        AnswerRepository.cacheInvalid = true
         return bankId to entities.size
     }
 

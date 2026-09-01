@@ -38,7 +38,8 @@ class AnswerRepository(private val db: AppDatabase) {
         val mode = matchMode()
         val currentBank = currentBankId()
         val key = if (mode == "all") "all" else "bank:$currentBank"
-        if (cacheKey != key) {
+        if (cacheInvalid || cacheKey != key) {
+            cacheInvalid = false
             cacheKey = key
             cacheQuestions = if (mode == "all") {
                 db.questionDao().getAll()
@@ -61,6 +62,11 @@ class AnswerRepository(private val db: AppDatabase) {
     /** 默认悬浮窗背景色（半透明蓝） */
     companion object {
         const val DEFAULT_OVERLAY_BG = "#E61A73E8"
+
+        /** 题库数据失效标记：导入新题库后置位，下次匹配强制刷新缓存（v1.7 修复） */
+        @Volatile
+        var cacheInvalid = false
+
         private val DEFAULT_PALETTE = listOf("#E61A73E8", "#E6174EA6", "#E60FA958")
 
         /** 纯 Kotlin 十六进制颜色解析：#RRGGBB / #AARRGGBB → Int（无 Android 依赖，可单测） */

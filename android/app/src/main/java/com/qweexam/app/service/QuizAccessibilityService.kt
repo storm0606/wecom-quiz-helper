@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * 无障碍读题服务：监听企业微信（com.tencent.wework）答题页，
@@ -79,7 +80,9 @@ class QuizAccessibilityService : AccessibilityService() {
         if (stemNorm.isEmpty() || stemNorm == lastStemNorm) return
         lastStemNorm = stemNorm
         scope.launch {
-            val result = repo?.match(block.stem) ?: return@launch
+            // 匹配（含模糊 LCS）放到后台线程，避免大题库合并时卡主线程（v1.7 修复）
+            val result = withContext(Dispatchers.Default) { repo?.match(block.stem) }
+                ?: return@launch
             val finalResult = ScreenAnswerFallback.merge(result, block)
             if (BuildConfig.DEBUG) {
                 Log.i(TAG, "题干[${block.header}]: ${block.stem.take(24)}... → ${finalResult.display} [${finalResult.status}]")

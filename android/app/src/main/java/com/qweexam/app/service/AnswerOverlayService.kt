@@ -54,6 +54,7 @@ class AnswerOverlayService : Service() {
     private var firstUpdate = true
     private var rotationIndex = 0
     private var lastPaletteKey: String? = null
+    private var lastRendered: com.qweexam.app.service.MatchResult? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -184,6 +185,8 @@ class AnswerOverlayService : Service() {
     }
 
     private suspend fun updateOverlay(result: com.qweexam.app.service.MatchResult?) {
+        // 同一结果不重复渲染（v1.7：避免启动时 showOverlay 与 collectLatest 对旧结果双更新导致误闪/误轮换）
+        if (result === lastRendered) return
         val view = overlayView ?: return
         // 读取用户自定义设置（反馈方式 + 轮换色板）
         val feedback = repo?.overlayFeedback() ?: "flash"
@@ -215,6 +218,7 @@ class AnswerOverlayService : Service() {
         if (isNewQuestion && feedback == "flash") {
             flashOverlay(view)
         }
+        lastRendered = result
         firstUpdate = false
     }
 
