@@ -13,6 +13,10 @@ interface QuestionDao {
     @Query("SELECT COUNT(*) FROM questions WHERE bankId = :bankId")
     suspend fun countByBank(bankId: Long): Int
 
+    /** 全部题库题目总数（v2.0：首页显示用，避免全表加载） */
+    @Query("SELECT COUNT(*) FROM questions")
+    suspend fun countAll(): Int
+
     /** 精确匹配：归一化题干直查（走 stemNorm 索引） */
     @Query("SELECT * FROM questions WHERE stemNorm = :stemNorm LIMIT 10")
     suspend fun findByStemNorm(stemNorm: String): List<QuestionEntity>

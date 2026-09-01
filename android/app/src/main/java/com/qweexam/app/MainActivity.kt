@@ -79,21 +79,15 @@ class MainActivity : AppCompatActivity() {
             if (AnswerStore.overlayRunning.value) R.string.btn_stop_quiz else R.string.btn_start_quiz
         )
         refreshActiveBank()
-        if (Build.VERSION.SDK_INT >= 33 &&
-            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
-            PackageManager.PERMISSION_GRANTED
-        ) {
-            requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
     }
 
-    /** 显示当前激活题库：所有题库 / 指定题库名称（v1.3） */
+    /** 显示当前激活题库：所有题库 / 指定题库名称（v1.3；v2.0 改 COUNT 查询避免全表加载） */
     private fun refreshActiveBank() {
         lifecycleScope.launch {
             val info = withContext(Dispatchers.IO) {
                 val db = AppDatabase.get(this@MainActivity)
                 if (answerRepository.matchMode() == "all") {
-                    getString(R.string.active_bank_all, db.questionDao().getAll().size)
+                    getString(R.string.active_bank_all, db.questionDao().countAll())
                 } else {
                     val bankId = answerRepository.currentBankId()
                     if (bankId == null) {
@@ -135,7 +129,14 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
             return
         }
-        // 3) 启动悬浮窗
+        // 3) 通知权限（Android 13+，仅此刻请求一次，避免每次回首页弹窗造成卡顿）
+        if (Build.VERSION.SDK_INT >= 33 &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+        // 4) 启动悬浮窗
         if (Build.VERSION.SDK_INT >= 26) {
             startForegroundService(Intent(this, AnswerOverlayService::class.java))
         } else {

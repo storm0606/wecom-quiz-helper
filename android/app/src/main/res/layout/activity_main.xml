@@ -49,18 +49,18 @@
         tools:text="已激活：所有题库（共 1365 题）" />
 
     <Button
-        android:id="@+id/btnBank"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
-        android:text="@string/module_bank" />
-
-    <Button
         android:id="@+id/btnQuiz"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="40dp"
         android:text="@string/btn_start_quiz" />
+
+    <Button
+        android:id="@+id/btnBank"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/module_bank" />
 
     <Button
         android:id="@+id/btnOverlaySettings"
