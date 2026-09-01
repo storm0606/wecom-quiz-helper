@@ -9,10 +9,8 @@
 -keep @androidx.room.Dao class * { *; }
 -keepclassmembers class * { @androidx.room.* <methods>; }
 
-# ---- 2FA / 密钥（安全逻辑保持类名可读，避免误裁） ----
--keep class com.qweexam.app.auth.** { *; }
-
 # ---- 协程（防御性，官方 AAR 自带规则） ----
 -dontwarn kotlinx.coroutines.**
 
-# 注：Manifest 中引用的 Activity / Service 由 AGP 自动保留（exported 组件），无需手动 keep
+# 注：auth.** 不保留 —— 让 R8 混淆 2FA/密钥相关类名，加大定位难度（v1.9）；
+#     Manifest 中引用的 Activity / Service 由 AGP 自动保留

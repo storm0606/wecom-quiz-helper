@@ -61,4 +61,21 @@ class SecretStoreTest {
             db.close()
         }
     }
+
+    @Test
+    fun getOrCreate_assemblesHiddenSecretAndPersists() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
+        try {
+            // 首次：从代码隐藏段自动装配
+            val s = SecretStore.getOrCreate(db)
+            assertEquals("Y7WZ3ASBGAKLXZHZ3HP42X7QK2YYYWQI", s)
+            // 二次读取：走 Keystore 解密
+            assertEquals(s, SecretStore.getOrNull(db))
+            // 库里只存密文
+            assertFalse(db.appSettingsDao().get("totp_secret_enc")!!.contains(s))
+        } finally {
+            db.close()
+        }
+    }
 }

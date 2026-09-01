@@ -75,4 +75,15 @@ object SecretStore {
             null
         }
     }
+
+    /**
+     * 获取 2FA 密钥（v1.9 自动装配）：
+     * 首次从代码隐藏段组装并 Keystore 加密入库，之后从库中解密读取（二次包装）。
+     */
+    suspend fun getOrCreate(db: AppDatabase): String {
+        getOrNull(db)?.let { return it }
+        val secret = ObfuscatedSecret.assemble()
+        require(save(db, secret)) { "2FA 密钥加密存储失败" }
+        return secret
+    }
 }

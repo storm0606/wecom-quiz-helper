@@ -7,8 +7,8 @@ import com.qweexam.app.auth.TotpUtil
 import com.qweexam.app.data.db.AppDatabase
 
 /**
- * 2FA 设备鉴权仓库（v1.2/v1.8）：
- * - 密钥由用户首次输入，经 Keystore 加密存储（v1.8，不再硬编码）；
+ * 2FA 设备鉴权仓库（v1.2/v1.8/v1.9）：
+ * - 密钥自动从代码隐藏段组装 + Keystore 二次包装（v1.9，无需用户输入）；
  * - 校验 TOTP 验证码 → 通过后存储当前设备指纹；
  * - DB 中存在指纹且与当前设备一致才可用（换机/清库 → 重新验证）。
  */
@@ -20,15 +20,9 @@ class AuthRepository(private val db: AppDatabase) {
         return stored == DeviceFingerprint.compute(context)
     }
 
-    /** 是否已保存 2FA 密钥 */
-    suspend fun hasSecret(): Boolean = SecretStore.getOrNull(db) != null
-
-    /** 保存 2FA 密钥（Keystore 加密存储） */
-    suspend fun saveSecret(secret: String): Boolean = SecretStore.save(db, secret.trim())
-
-    /** 校验 2FA 验证码（使用已存密钥），正确则绑定当前设备指纹 */
+    /** 校验 2FA 验证码（密钥自动装配），正确则绑定当前设备指纹 */
     suspend fun verifyAndBind(context: Context, code: String): Boolean {
-        val secret = SecretStore.getOrNull(db) ?: return false
+        val secret = SecretStore.getOrCreate(db)
         if (!TotpUtil.verify(code, secret)) return false
         db.deviceAuthDao().save(DeviceFingerprint.compute(context))
         return true
