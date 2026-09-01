@@ -14,6 +14,7 @@ import com.qweexam.app.data.repository.AnswerRepository
 import com.qweexam.app.ui.AnswerStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -35,6 +36,7 @@ class QuizAccessibilityService : AccessibilityService() {
     private var repo: AnswerRepository? = null
     private var lastStemNorm = ""
     private var lastEventAt = 0L
+    private var matchJob: Job? = null
 
     private val debounce = Runnable { handleScreen() }
 
@@ -79,7 +81,9 @@ class QuizAccessibilityService : AccessibilityService() {
         val stemNorm = Normalizer.normalize(block.stem)
         if (stemNorm.isEmpty() || stemNorm == lastStemNorm) return
         lastStemNorm = stemNorm
-        scope.launch {
+        // 取消上一题的匹配任务：快速切题时避免旧题慢匹配（模糊）后到覆盖新题结果（v2.2 修复）
+        matchJob?.cancel()
+        matchJob = scope.launch {
             // 匹配（含模糊 LCS）放到后台线程，避免大题库合并时卡主线程（v1.7 修复）
             val result = withContext(Dispatchers.Default) { repo?.match(block.stem) }
                 ?: return@launch

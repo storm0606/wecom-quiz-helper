@@ -42,11 +42,12 @@ class ColumnMappingAdapter(
         )
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinner.adapter = adapter
-        // 用户选择直接写回数据模型（此处 setSelection 也会触发监听，写回的就是本列的建议值）
+        // 用户选择直接写回数据模型；用回调时刻的实时位置，避免复用后位置过期（v2.2 修复）
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, pos: Int, id: Long) {
-                if (position < items.size) {
-                    items[position].selectedRole = ColumnRoles.ALL[pos]
+                val p = holder.bindingAdapterPosition
+                if (p != RecyclerView.NO_POSITION && p < items.size) {
+                    items[p].selectedRole = ColumnRoles.ALL[pos]
                 }
             }
 

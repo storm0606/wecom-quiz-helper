@@ -20,9 +20,13 @@ class AuthRepository(private val db: AppDatabase) {
         return stored == DeviceFingerprint.compute(context)
     }
 
-    /** 校验 2FA 验证码（密钥自动装配），正确则绑定当前设备指纹 */
+    /** 校验 2FA 验证码（密钥自动装配），正确则绑定当前设备指纹；内部异常不抛给 UI（v2.2 防闪退） */
     suspend fun verifyAndBind(context: Context, code: String): Boolean {
-        val secret = SecretStore.getOrCreate(db)
+        val secret = try {
+            SecretStore.getOrCreate(db)
+        } catch (e: Exception) {
+            return false
+        }
         if (!TotpUtil.verify(code, secret)) return false
         db.deviceAuthDao().save(DeviceFingerprint.compute(context))
         return true
