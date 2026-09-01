@@ -50,6 +50,7 @@ class AnswerOverlayService : Service() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var collectJob: Job? = null
+    private var firstUpdate = true
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -182,6 +183,20 @@ class AnswerOverlayService : Service() {
         val (answer, meta) = OverlayTextFormatter.format(result)
         view.findViewById<TextView>(R.id.tvAnswer).text = answer
         view.findViewById<TextView>(R.id.tvMeta).text = meta
+        // 识别到新题（非首次显示）→ 背景高亮闪烁一下，增强"已识别新题"的感知（v1.4）
+        if (result != null && !firstUpdate) {
+            flashOverlay(view)
+        }
+        firstUpdate = false
+    }
+
+    /** 轻微高亮闪烁：窗口亮度快速下降再恢复（约 0.4s） */
+    private fun flashOverlay(view: View) {
+        view.animate().cancel()
+        view.alpha = 1f
+        view.animate().alpha(0.35f).setDuration(120).withEndAction {
+            view.animate().alpha(1f).setDuration(260).start()
+        }.start()
     }
 
     /** 按缩放系数调整悬浮窗内文字大小（答案区限高 160dp，内容超长时内部滚动，不溢出屏幕） */
