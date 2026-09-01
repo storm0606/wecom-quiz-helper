@@ -147,13 +147,13 @@ class MainActivity : AppCompatActivity() {
     private fun showToast(msg: String) =
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
 
-    /** 悬浮窗自定义设置弹窗（v1.5）：反馈方式 + 背景颜色 */
+    /** 悬浮窗自定义设置弹窗（v1.5/v1.6）：反馈方式 + 多选轮换色板 */
     private fun showOverlaySettingsDialog() {
         val dialogView = layoutInflater.inflate(R.layout.overlay_settings_dialog, null)
         val rg = dialogView.findViewById<android.widget.RadioGroup>(R.id.rgFeedback)
         val swatchContainer = dialogView.findViewById<android.widget.LinearLayout>(R.id.swatchContainer)
 
-        // 预设背景色（含"恢复默认"）
+        // 预设色板（多选）
         val presets = listOf(
             "默认蓝" to AnswerRepository.DEFAULT_OVERLAY_BG,
             "深蓝" to "#E6174EA6",
@@ -163,22 +163,23 @@ class MainActivity : AppCompatActivity() {
             "红色" to "#E6C62828",
             "深灰" to "#E6374A5B"
         )
-        val selectedColor = arrayOf("")
+        val selected = mutableListOf<String>()
 
         lifecycleScope.launch {
-            val (feedback, color) = withContext(Dispatchers.IO) {
-                answerRepository.overlayFeedback() to
-                    "#%08X".format(answerRepository.overlayBgColor())
+            val (feedback, colorsHex) = withContext(Dispatchers.IO) {
+                val f = answerRepository.overlayFeedback()
+                val hexList = answerRepository.overlayColors().map { "#%08X".format(it) }
+                f to hexList
             }
             when (feedback) {
                 "none" -> rg.check(R.id.rbFeedbackNone)
                 "color" -> rg.check(R.id.rbFeedbackColor)
                 else -> rg.check(R.id.rbFeedbackFlash)
             }
-            selectedColor[0] = color
+            selected.clear()
+            selected.addAll(colorsHex)
 
-            // 色块
-            presets.forEachIndexed { idx, (name, hex) ->
+            presets.forEach { (name, hex) ->
                 val swatch = android.widget.FrameLayout(this@MainActivity).apply {
                     layoutParams = android.widget.LinearLayout.LayoutParams(
                         dp(44), dp(44)
@@ -190,45 +191,54 @@ class MainActivity : AppCompatActivity() {
                     isClickable = true
                     contentDescription = name
                     setOnClickListener {
-                        selectedColor[0] = hex
-                        refreshSwatchBorders(swatchContainer, presets, selectedColor[0])
+                        if (selected.contains(hex)) selected.remove(hex) else selected.add(hex)
+                        refreshSwatchBorders(swatchContainer, presets, selected)
                     }
                 }
                 swatchContainer.addView(swatch)
             }
-            refreshSwatchBorders(swatchContainer, presets, selectedColor[0])
+            refreshSwatchBorders(swatchContainer, presets, selected)
         }
 
-        androidx.appcompat.app.AlertDialog.Builder(this)
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle(R.string.overlay_settings_title)
             .setView(dialogView)
-            .setPositiveButton(android.R.string.ok) { _, _ ->
+            .setPositiveButton(android.R.string.ok, null)
+            .setNegativeButton(android.R.string.cancel, null)
+            .create()
+        dialog.setOnShowListener {
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val mode = when (rg.checkedRadioButtonId) {
                     R.id.rbFeedbackNone -> "none"
                     R.id.rbFeedbackColor -> "color"
                     else -> "flash"
                 }
+                if (mode == "color" && selected.size < 2) {
+                    showToast(getString(R.string.overlay_colors_min))
+                    return@setOnClickListener
+                }
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
                         answerRepository.setOverlayFeedback(mode)
-                        answerRepository.setOverlayBgColor(selectedColor[0])
+                        answerRepository.setOverlayColors(selected)
                     }
+                    dialog.dismiss()
                     showToast(getString(R.string.overlay_settings_saved))
                 }
             }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
+        }
+        dialog.show()
     }
 
     private fun refreshSwatchBorders(
         container: android.widget.LinearLayout,
         presets: List<Pair<String, String>>,
-        selectedHex: String
+        selected: List<String>
     ) {
         for (i in 0 until container.childCount) {
             val swatch = container.getChildAt(i)
             val bg = swatch.background as android.graphics.drawable.GradientDrawable
-            if (presets[i].second.equals(selectedHex, ignoreCase = true)) {
+            if (selected.contains(presets[i].second)) {
                 bg.setStroke(dp(3), ContextCompat.getColor(this, R.color.qwe_primary))
             } else {
                 bg.setStroke(dp(1), 0x33000000)

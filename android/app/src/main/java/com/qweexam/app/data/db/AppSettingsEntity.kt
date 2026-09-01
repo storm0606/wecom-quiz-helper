@@ -15,5 +15,6 @@ object AppSettingsKeys {
     const val MATCH_MODE = "match_mode"          // all / specific
     const val CURRENT_BANK_ID = "current_bank_id"
     const val OVERLAY_FEEDBACK = "overlay_feedback"   // none / flash / color
-    const val OVERLAY_BG_COLOR = "overlay_bg_color"   // #AARRGGBB
+    const val OVERLAY_COLORS = "overlay_colors"       // 逗号分隔的 #AARRGGBB 列表（轮换色板）
+    const val OVERLAY_BG_COLOR = "overlay_bg_color"   // 旧版单色（兼容读取）
 }

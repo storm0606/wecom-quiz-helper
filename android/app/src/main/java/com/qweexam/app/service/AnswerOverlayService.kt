@@ -52,6 +52,8 @@ class AnswerOverlayService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var collectJob: Job? = null
     private var firstUpdate = true
+    private var rotationIndex = 0
+    private var lastPaletteKey: String? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -183,28 +185,40 @@ class AnswerOverlayService : Service() {
 
     private suspend fun updateOverlay(result: com.qweexam.app.service.MatchResult?) {
         val view = overlayView ?: return
-        // 读取用户自定义设置（反馈方式 + 背景色）
+        // 读取用户自定义设置（反馈方式 + 轮换色板）
         val feedback = repo?.overlayFeedback() ?: "flash"
-        val bgColor = repo?.overlayBgColor() ?: android.graphics.Color.parseColor(
-            com.qweexam.app.data.repository.AnswerRepository.DEFAULT_OVERLAY_BG
-        )
+        val colors = repo?.overlayColors() ?: emptyList()
+        val paletteKey = colors.joinToString(",")
+        if (paletteKey != lastPaletteKey) {
+            rotationIndex = 0
+            lastPaletteKey = paletteKey
+        }
+
+        // 背景色：轮换模式（color）→ 每道新题切换到下一个颜色；否则用色板第一个颜色
+        val isNewQuestion = result != null && !firstUpdate
+        val bgColor = if (feedback == "color" && colors.size >= 2 && isNewQuestion) {
+            val c = colors[rotationIndex % colors.size]
+            rotationIndex++
+            c
+        } else {
+            colors.firstOrNull()
+                ?: android.graphics.Color.parseColor(
+                    com.qweexam.app.data.repository.AnswerRepository.DEFAULT_OVERLAY_BG
+                )
+        }
         applyBgColor(view, bgColor)
 
         val (answer, meta) = OverlayTextFormatter.format(result)
         view.findViewById<TextView>(R.id.tvAnswer).text = answer
         view.findViewById<TextView>(R.id.tvMeta).text = meta
-        // 识别到新题（非首次显示）→ 按用户设置的反馈方式提示（v1.4/v1.5）
-        if (result != null && !firstUpdate) {
-            when (feedback) {
-                "flash" -> flashOverlay(view)
-                "color" -> flashColorOverlay(view, bgColor)
-                else -> { /* 无反馈 */ }
-            }
+        // 反馈：flash 模式做亮度闪烁；color 模式颜色本身已轮换；none 无反馈（v1.4/v1.5/v1.6）
+        if (isNewQuestion && feedback == "flash") {
+            flashOverlay(view)
         }
         firstUpdate = false
     }
 
-    /** 应用自定义背景色（覆盖 overlay_bg 的 solid 颜色） */
+    /** 应用背景色（覆盖 overlay_bg 的 solid 颜色） */
     private fun applyBgColor(view: View, color: Int) {
         val bg = view.background as? android.graphics.drawable.GradientDrawable ?: return
         bg.setColor(color)
@@ -217,20 +231,6 @@ class AnswerOverlayService : Service() {
         view.animate().alpha(0.35f).setDuration(120).withEndAction {
             view.animate().alpha(1f).setDuration(260).start()
         }.start()
-    }
-
-    /** 反馈-背景色短暂变化：背景闪成浅色再恢复自定义背景色（约 0.4s） */
-    private fun flashColorOverlay(view: View, normalColor: Int) {
-        val bg = view.background as? android.graphics.drawable.GradientDrawable ?: return
-        val highlight = 0xFFFFE082.toInt() // 浅琥珀色
-        bg.setColor(highlight)
-        view.animate().cancel()
-        view.animate().alpha(1f).setDuration(0).start()
-        view.postDelayed({
-            if (overlayView === view) {
-                bg.setColor(normalColor)
-            }
-        }, 380)
     }
 
     /** 按缩放系数调整悬浮窗内文字大小（答案区限高 160dp，内容超长时内部滚动，不溢出屏幕） */

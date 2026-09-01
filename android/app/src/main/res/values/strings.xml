@@ -55,8 +55,9 @@
     <string name="overlay_feedback_hint">切换题目时悬浮窗的提示方式（答案相同也能感知到已识别新题）</string>
     <string name="overlay_feedback_none">无反馈</string>
     <string name="overlay_feedback_flash">高亮闪烁（窗口亮度闪一下）</string>
-    <string name="overlay_feedback_color">背景色变化（背景短暂变成浅色再恢复）</string>
-    <string name="overlay_bg_label">悬浮窗背景颜色</string>
-    <string name="overlay_bg_hint">点选色块选择（含恢复默认）</string>
+    <string name="overlay_feedback_color">背景色轮换（每切一题换下一个颜色）</string>
+    <string name="overlay_bg_label">轮换颜色（可多选）</string>
+    <string name="overlay_bg_hint">点击色块多选（再点取消）；轮换模式会按选中顺序每道新题切换一个颜色</string>
+    <string name="overlay_colors_min">背景色轮换模式至少需要选择 2 个颜色</string>
     <string name="overlay_settings_saved">悬浮窗设置已保存</string>
 </resources>
