@@ -68,6 +68,16 @@
             android:orientation="horizontal">
 
             <TextView
+                android:id="@+id/btnView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:text="@string/bank_view"
+                android:textColor="#1A73E8"
+                android:textSize="13sp" />
+
+            <TextView
                 android:id="@+id/btnUse"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

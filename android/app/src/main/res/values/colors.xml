@@ -4,4 +4,10 @@
     <color name="qwe_primary_dark">#174EA6</color>
     <color name="qwe_accent">#E8710A</color>
     <color name="ic_launcher_background">#1A73E8</color>
+    <!-- 题库内容预览表格（v2.4） -->
+    <color name="table_header_bg">#EEF2F6</color>
+    <color name="table_header_text">#1F2937</color>
+    <color name="table_row_alt">#FAFBFC</color>
+    <color name="table_answer_bg">#FFF8E1</color>
+    <color name="table_text">#374151</color>
 </resources>

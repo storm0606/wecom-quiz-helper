@@ -119,7 +119,7 @@ object AnswerMatcher {
         return when (q.qtype) {
             "单选" -> opts[q.answer] ?: q.answer
             "多选" -> {
-                val letters = q.answer.filter { it in "ABCD" }
+                val letters = q.answer.filter { it in "ABCDEF" }
                 val texts = letters.mapNotNull { opts[it.toString()]?.trim() }.filter { it.isNotEmpty() }
                 if (texts.isNotEmpty()) {
                     val shown = mutableListOf<String>()

@@ -48,6 +48,7 @@ class BankListActivity : AppCompatActivity() {
         adapter = BankListAdapter { bank, action ->
             when (action) {
                 BankAction.USE -> setCurrent(bank.id)
+                BankAction.VIEW -> openPreview(bank)
                 BankAction.RENAME -> showRenameDialog(bank)
                 BankAction.DELETE -> showDeleteDialog(bank)
             }
@@ -107,6 +108,15 @@ class BankListActivity : AppCompatActivity() {
         }
     }
 
+    /** v2.4：题库内容读取（按题型抽查，核对列映射） */
+    private fun openPreview(bank: BankEntity) {
+        startActivity(
+            Intent(this, BankPreviewActivity::class.java)
+                .putExtra(BankPreviewActivity.EXTRA_BANK_ID, bank.id)
+                .putExtra(BankPreviewActivity.EXTRA_BANK_NAME, bank.name)
+        )
+    }
+
     private fun showToast(msg: String) =
         android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_SHORT).show()
 
@@ -145,7 +155,7 @@ class BankListActivity : AppCompatActivity() {
             .show()
     }
 
-    enum class BankAction { USE, RENAME, DELETE }
+    enum class BankAction { VIEW, USE, RENAME, DELETE }
 
     class BankListAdapter(
         private val onAction: (BankEntity, BankAction) -> Unit
@@ -184,6 +194,7 @@ class BankListActivity : AppCompatActivity() {
                     " · " + fmt.format(Date(bank.createdAt))
             val isCurrent = specificMode && bank.id == currentBankId
             holder.binding.tvCurrentTag.visibility = if (isCurrent) View.VISIBLE else View.GONE
+            holder.binding.btnView.setOnClickListener { onAction(bank, BankAction.VIEW) }
             holder.binding.btnUse.setOnClickListener { onAction(bank, BankAction.USE) }
             holder.binding.btnRename.setOnClickListener { onAction(bank, BankAction.RENAME) }
             holder.binding.btnDelete.setOnClickListener { onAction(bank, BankAction.DELETE) }

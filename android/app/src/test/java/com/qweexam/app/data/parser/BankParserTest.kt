@@ -40,6 +40,80 @@ class BankParserTest {
         assertEquals("正确", BankParser.normalizeAnswer("正确"))
     }
 
+    // ---------- v2.4：答案/选项挤在一个单元格（答案空格/标点分隔、选项字母连写） ----------
+
+    @Test
+    fun normalizeAnswer_spaceDelimitedLetters() {
+        // 多选答案在一个单元格：A B C / A | B / A.B.C. / 小写 -> 归一 ABC
+        assertEquals("ABC", BankParser.normalizeAnswer("A B C"))
+        assertEquals("AB", BankParser.normalizeAnswer("A | B"))
+        assertEquals("AB", BankParser.normalizeAnswer("A、B"))
+        assertEquals("ABC", BankParser.normalizeAnswer("A.B.C."))
+        assertEquals("AB", BankParser.normalizeAnswer("a b"))
+        assertEquals("ABC", BankParser.normalizeAnswer(" A B C | "))
+        assertEquals("EF", BankParser.normalizeAnswer("E|F"))
+        assertEquals("D", BankParser.normalizeAnswer("D"))
+    }
+
+    @Test
+    fun splitOptions_lettersBoundary_inOneCell() {
+        // 选项挤在一个单元格、字母后跟空格（选项文字可含数字）
+        assertEquals(
+            mapOf("A" to "上行", "B" to "下行", "C" to "车辆段"),
+            BankParser.splitOptions("A 上行 B 下行 C 车辆段")
+        )
+        assertEquals(
+            mapOf("A" to "12号线", "B" to "3号线", "C" to "1号线"),
+            BankParser.splitOptions("A 12号线 B 3号线 C 1号线")
+        )
+        // 紧凑连写：点号 / 顿号紧跟字母
+        assertEquals(
+            mapOf("A" to "上行", "B" to "下行", "C" to "车辆段"),
+            BankParser.splitOptions("A.上行B.下行C.车辆段")
+        )
+        assertEquals(
+            mapOf("A" to "正线", "B" to "停车场", "C" to "车辆段"),
+            BankParser.splitOptions("A、正线B、停车场C、车辆段")
+        )
+        // 小写字母
+        assertEquals(mapOf("A" to "对", "B" to "错"), BankParser.splitOptions("a 对 b 错"))
+        // A–F 六选项
+        val six = BankParser.splitOptions("A 甲 B 乙 C 丙 D 丁 E 戊 F 己")
+        assertEquals(6, six.size)
+        assertEquals("己", six["F"])
+    }
+
+    @Test
+    fun splitOptions_lettersBoundary_noFalseSplit() {
+        // 非选项格（内容开头不是 A 标记 / 字母不成串）不误拆，整格作为唯一选项 A
+        val mid = "下列对A、B两站之间联络线的表述"
+        assertEquals(mapOf("A" to mid), BankParser.splitOptions(mid))
+        // 相邻字母 AB 不是标记
+        assertEquals(mapOf("A" to "AB"), BankParser.splitOptions("AB"))
+        // 单个选项仍按整格分配 A（原有行为）
+        assertEquals(mapOf("A" to "正确"), BankParser.splitOptions("正确"))
+    }
+
+    @Test
+    fun rowsToQuestions_combinedCell_endToEnd() {
+        // 表头 题目/选项/答案，选项格字母连写、答案格空格分隔 —— 应拆分并推断多选/判断
+        val rows = listOf(
+            listOf("题目", "选项", "答案"),
+            listOf("问题一", "A 上行 B 下行 C 车辆段", "A B C"),
+            listOf("问题二", "A 对 B 错", "A")
+        )
+        val qs = BankParser.rowsToQuestions(rows)
+        assertEquals(2, qs.size)
+        val multi = qs[0]
+        assertEquals(QuestionType.MULTI, multi.type)
+        assertEquals("ABC", multi.answer)
+        assertEquals(mapOf("A" to "上行", "B" to "下行", "C" to "车辆段"), multi.options)
+        val judge = qs[1]
+        assertEquals(QuestionType.JUDGE, judge.type)
+        assertEquals("A", judge.answer)
+        assertEquals(mapOf("A" to "对", "B" to "错"), judge.options)
+    }
+
     @Test
     fun splitOptions_pipeWithLetterPrefix() {
         val opts = BankParser.splitOptions("A、正线 |B、停车场 |C、车辆段 |")

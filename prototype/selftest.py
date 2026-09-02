@@ -14,7 +14,8 @@ import tempfile
 import zipfile
 from xml.sax.saxutils import escape
 
-from .bank_parser import load_bank, parse_docx_tables, parse_xlsx_bytes
+from .bank_parser import (load_bank, parse_docx_tables, parse_xlsx_bytes,
+                          rows_to_questions)
 from .dump_reader import extract_text_nodes, find_quiz_blocks
 from .matcher import answer, build_index, verify_ground_truth
 
@@ -286,6 +287,18 @@ def main():
                     mapping={"题目": 2, "选项": 3, "答案": 4})
     assert len(b1m) == 500, len(b1m)
     print("✅ 手动列映射（--columns 题目:2,选项:3,答案:4）解析一致：500 题")
+
+    # 7) v2.4：单格连写选项 + 单格空格分隔答案（多选）
+    qs = rows_to_questions([
+        ["题目", "选项", "答案"],
+        ["连写题", "A 上行 B 下行 C 车辆段", "A B C"],
+    ])
+    assert len(qs) == 1, qs
+    q = qs[0]
+    assert q.qtype == "多选", q
+    assert q.answer == "ABC", q.answer
+    assert q.options == {"A": "上行", "B": "下行", "C": "车辆段"}, q.options
+    print("✅ 单格选项（A 上行 B 下行 C 车辆段）拆分 + 空格答案（A B C）归一正确")
 
 
 if __name__ == "__main__":

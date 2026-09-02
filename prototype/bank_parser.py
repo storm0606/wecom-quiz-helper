@@ -39,6 +39,7 @@ _COL_ALIASES = {
     "题型": ("题型", "类型", "题目类型"),
     "题目": ("题目", "题干", "问题", "试题", "题干内容", "题目标题"),
     "答案": ("答案", "正确答案", "参考答案", "标准答案", "题目答案"),
+    "选项": ("选项",),  # v2.4：带表头文件若选项为单列且表头就叫"选项"（无 A–F 后缀）也自动识别
 }
 
 # 无表头时的常见布局猜测：列数 -> 角色顺序
@@ -53,18 +54,28 @@ _JUDGE_OPTION_WORDS = ("正确", "错误", "对", "错")
 
 
 def normalize_answer(raw):
-    """答案归一化：'A|B|C|D|' → 'ABCD'；'A、B' → 'AB'；去掉空白。"""
+    """答案归一化：'A|B|C|D|' / 'A B C' / 'A | B' / 'A、B' → 'ABC'（纯字母 A–F，
+    去空白/分隔/标点）；其它内容（数字填空 '50|100'、判断文字）→ 分隔符替换为 '、' 保可读。"""
     s = str(raw or "").strip()
-    s = re.sub(r"[|｜、,，;；/]+", "", s)
-    return s.strip()
+    letters = re.sub(r"[\s|｜、,，;；.．:：/]+", "", s).upper()
+    if letters and all(ch in "ABCDEF" for ch in letters):
+        return letters
+    return re.sub(r"[|｜,，;；/]+", "、", s).strip()
 
 
 def split_options(raw):
-    """把单列选项（'A、正线 |B、停车场 |C、车辆段 |'）拆成 {'A': '正线', ...}。
-    无字母前缀时按出现顺序分配 A/B/C/D。"""
+    """把单列选项拆成 {'A': 文本, ...}（v2.4 增强）：
+    1) 含 | 分隔：'A、正线 |B、停车场 |C、车辆段 |'（无字母前缀按出现顺序分配 A/B/C/D）；
+    2) 无 | 的单格连写（'A 上行 B 下行 C 车辆段' / 'A.上行B.下行'，选项挤在一个单元格）
+       → 按字母边界拆分；
+    3) 无法按字母识别时整格作为唯一选项 A。"""
     s = str(raw or "").strip()
     if not s:
         return {}
+    if "|" not in s and "｜" not in s:
+        out = _split_letter_options(s)
+        if out is not None:
+            return out
     parts = re.split(r"[|｜]+", s)
     opts = {}
     next_letter = "A"
@@ -72,13 +83,55 @@ def split_options(raw):
         p = p.strip()
         if not p:
             continue
-        m = re.match(r"^([A-Da-d])[\.、．:：\s]", p)
+        m = re.match(r"^([A-Fa-f])[\.、．:：\s]", p)
         if m:
             opts[m.group(1).upper()] = p[m.end():].strip()
         else:
             opts[next_letter] = p
             next_letter = chr(ord(next_letter) + 1)
     return opts
+
+
+def _split_letter_options(s):
+    """字母边界拆分（与 Kotlin BankParser.splitLetterOptions 语义一致），失败返回 None。
+    候选标记 = A–F 后紧跟标点（.、．:：)））或前后成词边界；
+    门槛：标记 ≥2、首标记为串首 A、字母严格递增、每段内容非空、标记数 ≤6。"""
+    n = len(s)
+    marks = []  # (字母下标, 大写字母)
+    i = 0
+    while i < n:
+        c = s[i]
+        if ("A" <= c <= "F") or ("a" <= c <= "f"):
+            punct = i + 1 < n and s[i + 1] in ".、．:：)）"
+            boundary = (i == 0 or s[i - 1].isspace()) and \
+                (i + 1 == n or s[i + 1].isspace())
+            if punct or boundary:
+                marks.append((i, c.upper()))
+                i += 2 if punct else 1
+                continue
+        i += 1
+    if len(marks) < 2:
+        return None
+    if marks[0][0] != 0 or marks[0][1] != "A":
+        return None
+    for k in range(1, len(marks)):
+        if marks[k][1] <= marks[k - 1][1]:
+            return None
+    if len(marks) > 6:
+        return None
+    out = {}
+    for k, (idx, letter) in enumerate(marks):
+        cs = idx + 1
+        while cs < n and (s[cs].isspace() or s[cs] in ".、．:：)）"):
+            cs += 1
+        ce = marks[k + 1][0] if k + 1 < len(marks) else n
+        content = s[cs:ce].strip()
+        while content and content[-1] in "、,，;；":
+            content = content[:-1].rstrip()
+        if not content:
+            return None
+        out[letter] = content
+    return out
 
 
 def infer_qtype(qtype_raw, answer, options):
@@ -94,7 +147,7 @@ def infer_qtype(qtype_raw, answer, options):
     if len(options) == 2 and all(normalize_answer(v) in _JUDGE_OPTION_WORDS
                                  for v in options.values()):
         return "判断"
-    letters = [ch for ch in normalize_answer(answer).upper() if ch in "ABCD"]
+    letters = [ch for ch in normalize_answer(answer).upper() if ch in "ABCDEF"]
     if len(letters) > 1:
         return "多选"
     return "单选"

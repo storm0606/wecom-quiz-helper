@@ -44,6 +44,12 @@
             android:exported="false"
             android:theme="@style/Theme.QWeExam.Light" />
 
+        <!-- 题库内容预览（v2.4：按题型抽查导入结果，核对列映射） -->
+        <activity
+            android:name=".ui.BankPreviewActivity"
+            android:exported="false"
+            android:theme="@style/Theme.QWeExam.Light" />
+
         <!-- 无障碍读题服务（M3） -->
         <service
             android:name=".service.QuizAccessibilityService"

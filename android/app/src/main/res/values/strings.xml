@@ -30,6 +30,11 @@
     <string name="bank_count">%1$d 题</string>
     <string name="bank_rename">重命名</string>
     <string name="bank_delete">删除</string>
+    <string name="bank_view">查看</string>
+    <string name="bank_preview_title">题库内容</string>
+    <string name="bank_preview_summary">共 %1$d 题 · 每种题型最多展示前 5 题（抽查，核对列映射）</string>
+    <string name="bank_preview_type_count">%1$s %2$d题</string>
+    <string name="bank_preview_empty">该题库暂无题目数据</string>
     <string name="bank_delete_confirm">确定删除题库「%1$s」？该题库下所有题目将一并删除。</string>
     <string name="auth_title">设备验证</string>
     <string name="auth_hint">本应用已启用 2FA 设备绑定。请在身份验证器（如 Google Authenticator）中输入当前 6 位动态验证码。</string>
